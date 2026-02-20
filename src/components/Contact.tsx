@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
-import { Send, Mail, MapPin, Loader2, CheckCircle } from "lucide-react";
+import { Send, Mail, MapPin, Loader2, CheckCircle, Linkedin, Github, ArrowRight } from "lucide-react";
+import MagneticButton from "./MagneticButton";
 
 export default function Contact() {
   const ref = useRef(null);
@@ -11,7 +12,6 @@ export default function Contact() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
-    // Simulate submission
     setTimeout(() => {
       setStatus("sent");
       setFormData({ name: "", email: "", message: "" });
@@ -33,30 +33,58 @@ export default function Contact() {
               Let's work <span className="text-gradient">together</span>
             </h2>
             <p className="mt-6 font-body text-lg leading-relaxed text-muted-foreground">
-              Have a project in mind, need consulting, or want to collaborate? Drop me a message and I'll get back to you.
+              Have a project in mind, need consulting, or want to collaborate? Whether it's technology, cybersecurity, climate economics, or business strategy — let's make it happen.
             </p>
 
             <div className="mt-10 space-y-6">
-              <div className="flex items-center gap-4">
+              <motion.div
+                whileHover={{ x: 4 }}
+                className="flex items-center gap-4"
+              >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-body text-sm text-muted-foreground">Email</p>
-                  <a href="mailto:hi@damilolayinusa.com" className="font-display font-medium text-foreground hover:text-primary transition-colors">
+                  <a href="mailto:hi@damilolayinusa.com" className="font-display font-medium text-foreground transition-colors hover:text-primary">
                     hi@damilolayinusa.com
                   </a>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
+              </motion.div>
+              <motion.div
+                whileHover={{ x: 4 }}
+                className="flex items-center gap-4"
+              >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-body text-sm text-muted-foreground">Location</p>
-                  <p className="font-display font-medium text-foreground">Abuja, Nigeria</p>
+                  <p className="font-display font-medium text-foreground">Abuja, Nigeria · Global Operations</p>
                 </div>
-              </div>
+              </motion.div>
+            </div>
+
+            {/* Social CTAs */}
+            <div className="mt-10 flex flex-wrap gap-3">
+              <MagneticButton
+                as="a"
+                href="https://linkedin.com/in/damilola-yinusa"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 font-body text-sm text-muted-foreground transition-all hover:border-primary hover:text-primary"
+              >
+                <Linkedin className="h-4 w-4" /> LinkedIn
+              </MagneticButton>
+              <MagneticButton
+                as="a"
+                href="https://github.com/Damilola-Yinusa"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 font-body text-sm text-muted-foreground transition-all hover:border-primary hover:text-primary"
+              >
+                <Github className="h-4 w-4" /> GitHub
+              </MagneticButton>
             </div>
           </motion.div>
 
@@ -100,9 +128,11 @@ export default function Contact() {
                 placeholder="Tell me about your project..."
               />
             </div>
-            <button
+            <motion.button
               type="submit"
               disabled={status !== "idle"}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-display font-semibold text-primary-foreground transition-all hover:shadow-lg hover:shadow-primary/30 disabled:opacity-70"
             >
               {status === "idle" && (
@@ -120,7 +150,7 @@ export default function Contact() {
                   Message Sent! <CheckCircle className="h-4 w-4" />
                 </>
               )}
-            </button>
+            </motion.button>
           </motion.form>
         </div>
       </div>
