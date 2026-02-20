@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 const navLinks = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
+  { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
   { label: "Awards", href: "#awards" },
   { label: "Contact", href: "#contact" },
@@ -32,7 +33,7 @@ export default function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="font-body text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="relative font-body text-sm text-muted-foreground transition-colors hover:text-foreground after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full"
             >
               {link.label}
             </a>
@@ -56,15 +57,18 @@ export default function Navbar() {
             className="overflow-hidden border-t border-border md:hidden"
           >
             <div className="flex flex-col gap-4 px-6 py-6">
-              {navLinks.map((link) => (
-                <a
+              {navLinks.map((link, i) => (
+                <motion.a
                   key={link.label}
                   href={link.href}
                   onClick={() => setOpen(false)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
                   className="font-body text-lg text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {link.label}
-                </a>
+                </motion.a>
               ))}
               <ThemeToggle />
             </div>
