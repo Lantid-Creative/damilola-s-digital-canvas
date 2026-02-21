@@ -77,6 +77,13 @@
   * {
     @apply border-border;
   }
+  /* Ensure Lucide/social SVG icons inherit color and stay visible */
+  a svg,
+  button svg {
+    flex-shrink: 0;
+    color: inherit;
+    stroke: currentColor;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
