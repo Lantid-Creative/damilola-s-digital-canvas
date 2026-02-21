@@ -46,8 +46,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-body text-sm text-muted-foreground">Email</p>
-                  <a href="mailto:hi@damilolayinusa.com" className="font-display font-medium text-foreground transition-colors hover:text-primary">
-                    hi@damilolayinusa.com
+                  <a href="mailto:hi@thedamiyinusa.com" className="font-display font-medium text-foreground transition-colors hover:text-primary">
+                    hi@thedamiyinusa.com
                   </a>
                 </div>
               </motion.div>

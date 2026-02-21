@@ -51,7 +51,7 @@ const FLOWS: Record<string, Message[]> = {
 
 const CONTACT_MSG: Message = {
   role: "assistant",
-  content: "Ready to connect? Here's how to reach Damilola directly:\n\n📧 hi@damilolayinusa.com\n📱 WhatsApp: +2347074430088\n\nHe typically responds within 24 hours. Looking forward to hearing from you!",
+  content: "Ready to connect? Here's how to reach Damilola directly:\n\n📧 hi@thedamiyinusa.com\n📱 WhatsApp: +2347074430088\n\nHe typically responds within 24 hours. Looking forward to hearing from you!",
 };
 
 export default function ChatAssistant() {
@@ -230,7 +230,7 @@ export default function ChatAssistant() {
                   className="flex flex-col gap-2 pt-2"
                 >
                   <a
-                    href="mailto:hi@damilolayinusa.com"
+                    href="mailto:hi@thedamiyinusa.com"
                     className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body text-sm font-medium text-primary-foreground transition-all hover:shadow-lg hover:shadow-primary/30"
                   >
                     <Mail className="h-4 w-4" /> Email Damilola

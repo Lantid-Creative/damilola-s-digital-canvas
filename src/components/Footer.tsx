@@ -17,7 +17,7 @@ export default function Footer() {
           <a href="https://linkedin.com/in/damilola-yinusa" target="_blank" rel="noreferrer" className="text-muted-foreground transition-colors hover:text-primary">
             <Linkedin className="h-5 w-5" />
           </a>
-          <a href="mailto:hi@damilolayinusa.com" className="text-muted-foreground transition-colors hover:text-primary">
+          <a href="mailto:hi@thedamiyinusa.com" className="text-muted-foreground transition-colors hover:text-primary">
             <Mail className="h-5 w-5" />
           </a>
         </div>

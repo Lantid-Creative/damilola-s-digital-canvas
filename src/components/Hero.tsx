@@ -116,7 +116,7 @@ export default function Hero() {
               {[
                 { href: "https://github.com/Damilola-Yinusa", icon: Github, label: "GitHub" },
                 { href: "https://linkedin.com/in/damilola-yinusa", icon: Linkedin, label: "LinkedIn" },
-                { href: "mailto:hi@damilolayinusa.com", icon: Mail, label: "Email" },
+                { href: "mailto:hi@thedamiyinusa.com", icon: Mail, label: "Email" },
               ].map(({ href, icon: Icon, label }) => (
                 <MagneticButton
                   key={label}
