@@ -10,6 +10,7 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 import FloatingParticles from "@/components/FloatingParticles";
+import ChatAssistant from "@/components/ChatAssistant";
 
 const Index = () => {
   return (
@@ -26,6 +27,7 @@ const Index = () => {
       <Awards />
       <Contact />
       <Footer />
+      <ChatAssistant />
     </div>
   );
 };
