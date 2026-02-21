@@ -17,9 +17,9 @@ const awards = [
   },
   {
     icon: Star,
-    title: "First Class Honours",
-    year: "Computer Eng.",
-    description: "3.66/4.0 GPA — Bachelor of Science in Computer Engineering with merit scholarship.",
+    title: "B.Sc. Computer Engineering",
+    year: "Graduate",
+    description: "Bachelor of Science in Computer Engineering — recognized for academic excellence and impactful technical projects.",
   },
   {
     icon: Cloud,
