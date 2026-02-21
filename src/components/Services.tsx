@@ -1,6 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
-import { Code2, Shield, BarChart3, Rocket, Cloud, Brain, Globe, Users } from "lucide-react";
+import { Code2, Shield, BarChart3, Rocket, Cloud, Brain, Globe, Users, BookOpen, Microscope, Zap, MessageSquare } from "lucide-react";
 
 const services = [
   {
@@ -46,10 +46,34 @@ const services = [
     details: "Cross-border fintech, go-to-market execution, and strategic partnerships across 4 continents.",
   },
   {
+    icon: Microscope,
+    title: "Research & Innovation",
+    description: "Academic research, technical writing, feasibility studies, and emerging technology evaluation.",
+    details: "Published research in cybersecurity and data science. Conducting feasibility analyses for enterprise tech adoption.",
+  },
+  {
+    icon: Zap,
+    title: "Hardware & IoT",
+    description: "Digital circuit design, FPGA programming, Verilog HDL, and embedded systems development.",
+    details: "Solar panel optimization circuits, FSM controllers, synchronous logic design, and schematic capture.",
+  },
+  {
     icon: Users,
     title: "Training & Education",
     description: "Cybersecurity workshops, GCP facilitation, tech community building. 3,000+ professionals trained.",
     details: "Django Girls Coach, Africa Code Week Trainer, GDSC Lead, WiDS Ambassador — impacting thousands globally.",
+  },
+  {
+    icon: BookOpen,
+    title: "Technical Writing",
+    description: "Documentation, API guides, whitepapers, and technical blog posts for developer audiences.",
+    details: "Clear, concise documentation for complex systems. From API reference docs to executive-level technical briefs.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Consulting & Advisory",
+    description: "Strategic technology advisory, digital transformation roadmaps, and fractional CTO services.",
+    details: "Advising startups and enterprises on technology architecture, team structure, and scaling strategies.",
   },
 ];
 
@@ -71,6 +95,13 @@ export default function Services() {
           <h2 className="mt-2 font-display text-4xl font-bold md:text-5xl">
             My <span className="text-gradient">Services</span>
           </h2>
+          <p className="mx-auto mt-4 max-w-2xl font-body text-muted-foreground">
+            Click any service to learn more, or{" "}
+            <a href="#chat" className="text-primary underline underline-offset-4 transition-colors hover:text-primary/80">
+              chat with my AI assistant
+            </a>{" "}
+            to explore how I can help with your project.
+          </p>
         </motion.div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -79,7 +110,7 @@ export default function Services() {
               key={title}
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
+              transition={{ delay: 0.1 + i * 0.06, duration: 0.5 }}
               whileHover={{ y: -6 }}
               onClick={() => setExpanded(expanded === i ? null : i)}
               className="group glass-card cursor-pointer p-6 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"

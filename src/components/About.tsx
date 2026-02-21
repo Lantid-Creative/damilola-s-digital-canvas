@@ -2,6 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { GraduationCap, Globe, Shield, Code2 } from "lucide-react";
 import { useCountUp } from "@/hooks/useCountUp";
+import CodeSnippet from "./CodeSnippet";
 
 const stats = [
   { value: 3000, suffix: "+", label: "Professionals Trained" },
@@ -95,11 +96,14 @@ export default function About() {
             initial={{ opacity: 0, x: 30 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="grid grid-cols-2 gap-6"
+            className="flex flex-col gap-6"
           >
-            {stats.map((stat, i) => (
-              <AnimatedStat key={stat.label} {...stat} inView={inView} delay={0.5 + i * 0.1} />
-            ))}
+            <div className="grid grid-cols-2 gap-6">
+              {stats.map((stat, i) => (
+                <AnimatedStat key={stat.label} {...stat} inView={inView} delay={0.5 + i * 0.1} />
+              ))}
+            </div>
+            <CodeSnippet />
           </motion.div>
         </div>
       </div>
