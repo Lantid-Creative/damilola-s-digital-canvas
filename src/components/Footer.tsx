@@ -6,7 +6,7 @@ const linkClass = "text-muted-foreground transition-colors hover:text-primary in
 
 type SocialLink = {
   href: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: React.ComponentType<any>;
   label: string;
   strokeWidth?: number;
 };
