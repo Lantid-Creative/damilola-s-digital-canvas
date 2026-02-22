@@ -1,123 +1,175 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, ArrowRight, Mail, Phone } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MessageSquare, X, Send, Mail, Phone, RotateCcw, Loader2 } from "lucide-react";
 
 type Message = {
-  role: "assistant" | "user";
+  role: "system" | "assistant" | "user";
   content: string;
-  options?: string[];
 };
 
-const INTRO: Message = {
+const AZURE_ENDPOINT =
+  "https://smartedge.cognitiveservices.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview";
+const AZURE_KEY =
+  "F3yqy6cug8lvAauc582zzJGpVB1JVDs0jck2JzzzR6LWAfYYxLuqJQQJ99BKACYeBjFXJ3w3AAABACOGx5T4";
+
+const SYSTEM_PROMPT = `You are "Damilola", the virtual assistant on Damilola Yinusa's portfolio website. You speak in a warm, professional, and confident tone.
+
+About Damilola Yinusa:
+- Full-stack developer (React, Laravel, Django, Flutter, React Native)
+- IBM-certified cybersecurity professional (API security, quantum-safe encryption, network defense)
+- AI & Data specialist (Python, TensorFlow, scikit-learn, LangChain)
+- Hardware & IoT engineer (Arduino, Raspberry Pi, embedded systems)
+- GCP Facilitator, trained 3,000+ professionals globally
+- Experience at Clea (fintech), Xenith IQ (govtech), and across 4 continents
+- Awards: Google Cloud Innovator, IBM Cybersecurity Certificate, HNG Finalist
+- Services: Software Development, Cybersecurity, AI/ML, Research & Innovation, Hardware/IoT, Technical Writing, Cloud Architecture, Strategy/Consulting, Training/Workshops
+
+Your job:
+1. Help visitors understand Damilola's expertise and how he can help with their project.
+2. Ask clarifying questions to understand what the visitor needs.
+3. Help them articulate their project ideas and requirements.
+4. Provide high-level guidance and planning suggestions, but always emphasize that Damilola himself should be contacted for detailed planning and execution.
+5. Be helpful but always direct people to reach out for real engagement.
+
+Contact details (share when appropriate):
+- Email: hi@damilolayinusa.com
+- WhatsApp: +2347074430088
+
+Keep responses concise (2-4 sentences typically). Use emojis sparingly. Be professional but approachable.`;
+
+const WELCOME_MSG: Message = {
   role: "assistant",
-  content: "Hey there! 👋 I'm Damilola's virtual assistant. I can help you explore how Damilola can contribute to your project. What brings you here today?",
-  options: [
-    "I need a developer",
-    "I need cybersecurity help",
-    "I need AI / Data solutions",
-    "Business strategy / Consulting",
-    "Training / Workshop",
-    "Something else",
-  ],
-};
-
-const FLOWS: Record<string, Message[]> = {
-  "I need a developer": [
-    { role: "assistant", content: "Great! Damilola builds full-stack apps with React, Laravel, Django, Flutter & React Native. What type of project?", options: ["Web Application", "Mobile App", "API / Backend", "E-commerce", "SaaS Platform"] },
-    { role: "assistant", content: "Sounds exciting! What stage is your project at?", options: ["Just an idea", "Need an MVP", "Existing product — need features", "Need a tech co-founder/advisor"] },
-    { role: "assistant", content: "Perfect. Damilola has delivered 15+ production apps across fintech, govtech, edtech and SaaS. He'd love to discuss your project in detail! 🚀" },
-  ],
-  "I need cybersecurity help": [
-    { role: "assistant", content: "Damilola is IBM-certified in cybersecurity with expertise in API security, quantum-safe encryption, and network defense. What do you need?", options: ["Penetration Testing", "Security Audit", "Compliance / Framework", "Security Training", "Incident Response"] },
-    { role: "assistant", content: "Got it. He's built tools like API Security Tester and Quantum-Safe Encryption frameworks. Let's get you connected! 🔒" },
-  ],
-  "I need AI / Data solutions": [
-    { role: "assistant", content: "Damilola works with Python, TensorFlow, scikit-learn, and LangChain. What's your AI challenge?", options: ["Predictive Analytics", "NLP / Chatbots", "Computer Vision", "Data Pipeline", "AI Integration in existing app"] },
-    { role: "assistant", content: "He's built anomaly detection systems, AI job-matching platforms, and custom knowledge chatbots. Let's explore your use case! 🧠" },
-  ],
-  "Business strategy / Consulting": [
-    { role: "assistant", content: "Damilola has led products across fintech, govtech, and edtech on 4 continents. What area?", options: ["Go-to-market strategy", "Product roadmap", "Fractional CTO", "Market expansion", "Climate/ESG strategy"] },
-    { role: "assistant", content: "With experience at companies like Clea (fintech) and Xenith IQ (govtech), he brings cross-sector strategic insight. Let's talk! 📊" },
-  ],
-  "Training / Workshop": [
-    { role: "assistant", content: "Damilola has trained 3,000+ professionals globally. What topic interests you?", options: ["Cybersecurity Workshop", "Cloud / GCP Training", "AI / ML Bootcamp", "Full-Stack Development", "Custom Corporate Training"] },
-    { role: "assistant", content: "As a GCP Facilitator, Django Girls Coach, and GDSC Lead, he tailors sessions for any audience. Let's plan your training! 🎓" },
-  ],
-  "Something else": [
-    { role: "assistant", content: "No problem! Tell me a bit about what you're looking for and I'll point you in the right direction.", options: ["Research collaboration", "Speaking engagement", "Partnership opportunity", "Hardware / IoT project"] },
-    { role: "assistant", content: "Interesting! Damilola is always open to unique collaborations. Reach out directly for the best conversation! 💡" },
-  ],
-};
-
-const CONTACT_MSG: Message = {
-  role: "assistant",
-  content: "Ready to connect? Here's how to reach Damilola directly:\n\n📧 hi@thedamiyinusa.com\n📱 WhatsApp: +2347074430088\n\nHe typically responds within 24 hours. Looking forward to hearing from you!",
+  content:
+    "Hey there! 👋 I'm Damilola's AI assistant. I can help you explore how Damilola can contribute to your project — whether it's software development, cybersecurity, AI solutions, or something else entirely. What brings you here today?",
 };
 
 export default function ChatAssistant() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([INTRO]);
-  const [flowKey, setFlowKey] = useState<string | null>(null);
-  const [flowStep, setFlowStep] = useState(0);
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
   const [inputVal, setInputVal] = useState("");
-  const [showContact, setShowContact] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleOption = (option: string) => {
-    const userMsg: Message = { role: "user", content: option };
-    
-    if (!flowKey) {
-      // First selection - enter a flow
-      const flow = FLOWS[option];
-      if (flow) {
-        setFlowKey(option);
-        setFlowStep(0);
-        setMessages((prev) => [...prev, userMsg, flow[0]]);
-      }
-    } else {
-      // Continue in flow
-      const flow = FLOWS[flowKey];
-      const nextStep = flowStep + 1;
-      if (flow && nextStep < flow.length) {
-        setFlowStep(nextStep);
-        setMessages((prev) => [...prev, userMsg, flow[nextStep]]);
-        if (nextStep === flow.length - 1) {
-          // Last step — show contact after delay
-          setTimeout(() => {
-            setMessages((prev) => [...prev, CONTACT_MSG]);
-            setShowContact(true);
-          }, 1500);
-        }
-      }
-    }
-  };
+  const sendMessage = useCallback(
+    async (userText: string) => {
+      if (!userText.trim() || isStreaming) return;
 
-  const handleFreeText = (e: React.FormEvent) => {
+      const userMsg: Message = { role: "user", content: userText };
+      const updatedMessages = [...messages, userMsg];
+      setMessages(updatedMessages);
+      setInputVal("");
+      setIsStreaming(true);
+
+      // Build API messages with system prompt
+      const apiMessages = [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...updatedMessages
+          .filter((m) => m.role !== "system")
+          .map((m) => ({ role: m.role, content: m.content })),
+      ];
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        const resp = await fetch(AZURE_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": AZURE_KEY,
+          },
+          body: JSON.stringify({
+            messages: apiMessages,
+            stream: true,
+            max_tokens: 500,
+            temperature: 0.7,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!resp.ok || !resp.body) {
+          throw new Error(`Azure API error: ${resp.status}`);
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let assistantSoFar = "";
+        let textBuffer = "";
+
+        // Add empty assistant message
+        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          textBuffer += decoder.decode(value, { stream: true });
+
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (line.startsWith(":") || line.trim() === "") continue;
+            if (!line.startsWith("data: ")) continue;
+
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") break;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                assistantSoFar += content;
+                const snapshot = assistantSoFar;
+                setMessages((prev) =>
+                  prev.map((m, i) =>
+                    i === prev.length - 1 ? { ...m, content: snapshot } : m
+                  )
+                );
+              }
+            } catch {
+              textBuffer = line + "\n" + textBuffer;
+              break;
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          setMessages((prev) => [
+            ...prev,
+            ...(prev[prev.length - 1]?.role === "assistant" && prev[prev.length - 1]?.content === ""
+              ? []
+              : []),
+            {
+              role: "assistant" as const,
+              content:
+                "I'm having trouble connecting right now. Please reach out to Damilola directly at hi@damilolayinusa.com or via WhatsApp at +2347074430088 🙏",
+            },
+          ]);
+        }
+      } finally {
+        setIsStreaming(false);
+        abortRef.current = null;
+      }
+    },
+    [messages, isStreaming]
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputVal.trim()) return;
-    const userMsg: Message = { role: "user", content: inputVal };
-    setInputVal("");
-    setMessages((prev) => [
-      ...prev,
-      userMsg,
-      {
-        role: "assistant",
-        content: `Thanks for sharing that! This sounds like something Damilola would be interested in discussing. For the best experience, I'd recommend reaching out directly — he loves diving deep into unique projects! 🚀`,
-      },
-      CONTACT_MSG,
-    ]);
-    setShowContact(true);
+    sendMessage(inputVal);
   };
 
   const reset = () => {
-    setMessages([INTRO]);
-    setFlowKey(null);
-    setFlowStep(0);
-    setShowContact(false);
+    abortRef.current?.abort();
+    setMessages([WELCOME_MSG]);
+    setIsStreaming(false);
   };
 
   return (
@@ -160,113 +212,121 @@ export default function ChatAssistant() {
                   D
                 </div>
                 <div>
-                  <p className="font-display text-sm font-semibold text-foreground">Damilola's Assistant</p>
+                  <p className="font-display text-sm font-semibold text-foreground">
+                    Damilola AI
+                  </p>
                   <p className="font-body text-[10px] text-muted-foreground">
                     <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-primary" />
-                    Online — ready to help
+                    Powered by GPT-4o
                   </p>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground transition-colors hover:text-foreground">
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={reset}
+                  className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  title="New conversation"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i === messages.length - 1 ? 0.2 : 0 }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 font-body text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-secondary text-foreground rounded-bl-md"
-                    }`}
-                    style={{ whiteSpace: "pre-line" }}
+              {messages
+                .filter((m) => m.role !== "system")
+                .map((msg, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.content}
-                  </div>
-                </motion.div>
-              ))}
-
-              {/* Options */}
-              {messages.length > 0 && (() => {
-                const last = messages[messages.length - 1];
-                if (last.role === "assistant" && last.options && !showContact) {
-                  return (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                      className="flex flex-wrap gap-1.5 pt-1"
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 font-body text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-secondary text-foreground rounded-bl-md"
+                      }`}
+                      style={{ whiteSpace: "pre-line" }}
                     >
-                      {last.options.map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => handleOption(opt)}
-                          className="rounded-full border border-primary/30 px-3 py-1.5 font-body text-xs text-primary transition-all hover:bg-primary hover:text-primary-foreground"
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </motion.div>
-                  );
-                }
-                return null;
-              })()}
+                      {msg.content}
+                      {msg.role === "assistant" && msg.content === "" && (
+                        <span className="inline-flex items-center gap-1">
+                          <Loader2 className="h-3 w-3 animate-spin" /> Thinking...
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
 
-              {/* Contact buttons */}
-              {showContact && (
+              {/* Quick suggestions on first message */}
+              {messages.length === 1 && !isStreaming && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="flex flex-col gap-2 pt-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex flex-wrap gap-1.5 pt-1"
                 >
-                  <a
-                    href="mailto:hi@thedamiyinusa.com"
-                    className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body text-sm font-medium text-primary-foreground transition-all hover:shadow-lg hover:shadow-primary/30"
-                  >
-                    <Mail className="h-4 w-4" /> Email Damilola
-                  </a>
-                  <a
-                    href="https://wa.me/2347074430088"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 rounded-xl border border-primary/30 px-4 py-2.5 font-body text-sm font-medium text-foreground transition-all hover:border-primary"
-                  >
-                    <Phone className="h-4 w-4 text-primary" /> WhatsApp
-                  </a>
-                  <button
-                    onClick={reset}
-                    className="mt-1 font-body text-xs text-muted-foreground transition-colors hover:text-primary"
-                  >
-                    ← Start over
-                  </button>
+                  {[
+                    "I need a developer",
+                    "Cybersecurity help",
+                    "AI / Data solutions",
+                    "Let's discuss a project",
+                  ].map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => sendMessage(opt)}
+                      className="rounded-full border border-primary/30 px-3 py-1.5 font-body text-xs text-primary transition-all hover:bg-primary hover:text-primary-foreground"
+                    >
+                      {opt}
+                    </button>
+                  ))}
                 </motion.div>
               )}
 
               <div ref={bottomRef} />
             </div>
 
+            {/* Contact bar */}
+            <div className="flex items-center justify-center gap-4 border-t border-border bg-secondary/50 px-4 py-2">
+              <a
+                href="mailto:hi@damilolayinusa.com"
+                className="flex items-center gap-1 font-body text-[11px] text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Mail className="h-3 w-3" /> Email
+              </a>
+              <a
+                href="https://wa.me/2347074430088"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 font-body text-[11px] text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Phone className="h-3 w-3" /> WhatsApp
+              </a>
+            </div>
+
             {/* Input */}
-            <form onSubmit={handleFreeText} className="border-t border-border p-3">
+            <form onSubmit={handleSubmit} className="border-t border-border p-3">
               <div className="flex items-center gap-2">
                 <input
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 rounded-xl border border-border bg-secondary px-4 py-2.5 font-body text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary"
+                  placeholder={isStreaming ? "Waiting for response..." : "Ask me anything..."}
+                  disabled={isStreaming}
+                  className="flex-1 rounded-xl border border-border bg-secondary px-4 py-2.5 font-body text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all hover:shadow-lg hover:shadow-primary/30"
+                  disabled={isStreaming || !inputVal.trim()}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" />
                 </button>
