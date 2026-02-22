@@ -2,3 +2,6 @@ project_id = "diyraugsmhqisineidvj"
 
 [functions.chat]
 verify_jwt = false
+
+[functions.save-lead]
+verify_jwt = false
