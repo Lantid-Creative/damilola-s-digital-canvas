@@ -259,7 +259,7 @@ export default function ChatAssistant() {
         abortRef.current = null;
       }
     },
-    [messages, isStreaming]
+    [messages, isStreaming, ensureSession, logMessage]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -272,6 +272,7 @@ export default function ChatAssistant() {
     setMessages([WELCOME_MSG]);
     setIsStreaming(false);
     setShowBooking(false);
+    sessionIdRef.current = null;
   };
 
   return (
