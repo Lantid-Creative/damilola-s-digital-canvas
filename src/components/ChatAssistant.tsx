@@ -234,6 +234,7 @@ export default function ChatAssistant() {
             }
           }
         }
+        logMessage("assistant", assistantSoFar);
 
         // Show booking form if assistant mentions booking
         if (assistantSoFar.toLowerCase().includes("booking form") || assistantSoFar.toLowerCase().includes("schedule") || assistantSoFar.toLowerCase().includes("book a call")) {
