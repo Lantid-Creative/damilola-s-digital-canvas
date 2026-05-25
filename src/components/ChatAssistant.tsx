@@ -145,10 +145,28 @@ export default function ChatAssistant() {
   const [showBooking, setShowBooking] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, showBooking]);
+
+  const ensureSession = useCallback(async () => {
+    if (sessionIdRef.current) return sessionIdRef.current;
+    const { data } = await supabase
+      .from("chat_sessions")
+      .insert({ visitor_label: `Visitor ${new Date().toLocaleString()}` })
+      .select("id")
+      .single();
+    if (data?.id) sessionIdRef.current = data.id;
+    return sessionIdRef.current;
+  }, []);
+
+  const logMessage = useCallback(async (role: "user" | "assistant", content: string) => {
+    const sid = sessionIdRef.current;
+    if (!sid || !content.trim()) return;
+    await supabase.from("chat_messages").insert({ session_id: sid, role, content });
+  }, []);
 
   const sendMessage = useCallback(
     async (userText: string) => {
