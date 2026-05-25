@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, X, Send, Mail, Phone, RotateCcw, Loader2, Calendar, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   role: "assistant" | "user";
@@ -144,10 +145,28 @@ export default function ChatAssistant() {
   const [showBooking, setShowBooking] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, showBooking]);
+
+  const ensureSession = useCallback(async () => {
+    if (sessionIdRef.current) return sessionIdRef.current;
+    const { data } = await supabase
+      .from("chat_sessions")
+      .insert({ visitor_label: `Visitor ${new Date().toLocaleString()}` })
+      .select("id")
+      .single();
+    if (data?.id) sessionIdRef.current = data.id;
+    return sessionIdRef.current;
+  }, []);
+
+  const logMessage = useCallback(async (role: "user" | "assistant", content: string) => {
+    const sid = sessionIdRef.current;
+    if (!sid || !content.trim()) return;
+    await supabase.from("chat_messages").insert({ session_id: sid, role, content });
+  }, []);
 
   const sendMessage = useCallback(
     async (userText: string) => {
@@ -158,6 +177,9 @@ export default function ChatAssistant() {
       setMessages(updatedMessages);
       setInputVal("");
       setIsStreaming(true);
+
+      await ensureSession();
+      logMessage("user", userText);
 
       const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
@@ -212,6 +234,7 @@ export default function ChatAssistant() {
             }
           }
         }
+        logMessage("assistant", assistantSoFar);
 
         // Show booking form if assistant mentions booking
         if (assistantSoFar.toLowerCase().includes("booking form") || assistantSoFar.toLowerCase().includes("schedule") || assistantSoFar.toLowerCase().includes("book a call")) {
@@ -236,7 +259,7 @@ export default function ChatAssistant() {
         abortRef.current = null;
       }
     },
-    [messages, isStreaming]
+    [messages, isStreaming, ensureSession, logMessage]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -249,6 +272,7 @@ export default function ChatAssistant() {
     setMessages([WELCOME_MSG]);
     setIsStreaming(false);
     setShowBooking(false);
+    sessionIdRef.current = null;
   };
 
   return (

@@ -14,8 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          visitor_label: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          visitor_label?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          visitor_label?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
+          admin_notes: string | null
           created_at: string
           email: string
           id: string
@@ -23,8 +77,10 @@ export type Database = {
           phone: string | null
           preferred_date: string
           project_description: string
+          status: Database["public"]["Enums"]["lead_status"]
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           email: string
           id?: string
@@ -32,8 +88,10 @@ export type Database = {
           phone?: string | null
           preferred_date: string
           project_description: string
+          status?: Database["public"]["Enums"]["lead_status"]
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -41,6 +99,7 @@ export type Database = {
           phone?: string | null
           preferred_date?: string
           project_description?: string
+          status?: Database["public"]["Enums"]["lead_status"]
         }
         Relationships: []
       }
@@ -80,6 +139,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      lead_status: "new" | "contacted" | "booked" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -208,6 +268,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      lead_status: ["new", "contacted", "booked", "closed"],
     },
   },
 } as const
