@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, X, Send, Mail, Phone, RotateCcw, Loader2, Calendar, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   role: "assistant" | "user";
