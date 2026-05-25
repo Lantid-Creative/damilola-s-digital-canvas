@@ -178,6 +178,9 @@ export default function ChatAssistant() {
       setInputVal("");
       setIsStreaming(true);
 
+      await ensureSession();
+      logMessage("user", userText);
+
       const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
 
       const controller = new AbortController();
